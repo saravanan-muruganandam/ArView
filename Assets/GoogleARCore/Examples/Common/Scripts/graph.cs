@@ -84,7 +84,7 @@ public class graph : MonoBehaviour {
 		graphLine.loop = false;
 
 		graphLine.startWidth = graphLine.endWidth = yLine.startWidth = xLine.startWidth = yLine.endWidth = xLine.endWidth = 0.03f;
-		graphLine.material = xLine.material = yLine.material = new Material(Shader.Find("Particles/Additive"));
+		//graphLine.material = xLine.material = yLine.material = new Material(Shader.Find("Particles/Additive"));
 
 		for (int i = 0; i < noOfYpartition + 1; i++)
 		{
