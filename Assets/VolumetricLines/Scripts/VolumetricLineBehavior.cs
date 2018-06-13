@@ -337,8 +337,8 @@ namespace VolumetricLines
 	
 		void OnDrawGizmos()
 		{
-			Gizmos.color = Color.green;
-			Gizmos.DrawLine(gameObject.transform.TransformPoint(m_startPos), gameObject.transform.TransformPoint(m_endPos));
+			//Gizmos.color = Color.green;
+			//Gizmos.DrawLine(gameObject.transform.TransformPoint(m_startPos), gameObject.transform.TransformPoint(m_endPos));
 		}
 		#endregion
 	}

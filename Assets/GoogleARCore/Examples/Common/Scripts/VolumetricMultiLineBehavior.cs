@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 namespace VolumetricLines
 {
@@ -182,33 +183,44 @@ namespace VolumetricLines
 		/// </summary>
 		public void CreateAllVolumetricLines()
 		{
-			if (null != m_volumetricLines)
+			if (m_lineVertices.Length > 3)
 			{
-				return;
-			}
-			
-			m_volumetricLines = new VolumetricLineBehavior[m_lineVertices.Length - 1];
-			for (int i = 0; i < m_lineVertices.Length - 1; ++i)
-			{
-				int n = i;
-				var go = new GameObject("multiline" + n);
-				go.transform.SetParent(gameObject.transform);
-				go.transform.localPosition = Vector3.zero;
-				go.transform.localRotation = Quaternion.identity;
 
-				var volLine = go.AddComponent<VolumetricLineBehavior>();
-				volLine.TemplateMaterial = TemplateMaterial;
-				volLine.DoNotOverwriteTemplateMaterialProperties = DoNotOverwriteTemplateMaterialProperties;
-				volLine.LineWidth = LineWidth;
-				volLine.LineColor = LineColor;
-				volLine.LightSaberFactor = LightSaberFactor;
-				volLine.StartPos = m_lineVertices[i];
-				volLine.EndPos = m_lineVertices[i + 1];
-				
-				m_volumetricLines[i] = volLine;
+				if (null != m_volumetricLines)
+				{
+					return;
+				}
+
+				m_volumetricLines = new VolumetricLineBehavior[m_lineVertices.Length - 1];
+				for (int i = 0; i < m_lineVertices.Length - 1; ++i)
+				{
+					int n = i;
+					var go = new GameObject("multiline" + n);
+					go.transform.SetParent(gameObject.transform);
+					//go.transform.localScale = transform.parent.localScale;
+					//go.transform.localPosition = Vector3.zero;
+					//go.transform.localRotation = Quaternion.identity;
+
+					var volLine = go.AddComponent<VolumetricLineBehavior>();
+					volLine.TemplateMaterial = TemplateMaterial;
+					volLine.DoNotOverwriteTemplateMaterialProperties = DoNotOverwriteTemplateMaterialProperties;
+					volLine.LineWidth = LineWidth;
+					volLine.LineColor = LineColor;
+					volLine.LightSaberFactor = LightSaberFactor;
+					volLine.StartPos = m_lineVertices[i];
+					volLine.EndPos = m_lineVertices[i + 1];
+
+					m_volumetricLines[i] = volLine;
+				}
+			}
+			else
+			{
+				Debug.Log("NOT ENOUGH POINTS***********************"+ m_lineVertices.Length);
 			}
 		}
 
+
+	
 		/// <summary>
 		/// Destroys all line parts of this multiline
 		/// </summary>
@@ -245,6 +257,7 @@ namespace VolumetricLines
 			CreateAllVolumetricLines();
 		}
 
+
 		/// <summary>
 		/// Sets all material properties (color, width, light saber factor)
 		/// </summary>
@@ -260,7 +273,7 @@ namespace VolumetricLines
 
 		void Start () 
 		{
-			CreateAllVolumetricLines();
+			//CreateAllVolumetricLines();
 		}
 		
 		void OnDestroy()
@@ -282,7 +295,7 @@ namespace VolumetricLines
 			}
 			for (int i=0; i < m_lineVertices.Length - 1; ++i)
 			{
-				Gizmos.DrawLine(gameObject.transform.TransformPoint(m_lineVertices[i]), gameObject.transform.TransformPoint(m_lineVertices[i+1]));
+				//Gizmos.DrawLine(gameObject.transform.TransformPoint(m_lineVertices[i]), gameObject.transform.TransformPoint(m_lineVertices[i+1]));
 			}
 		}
 		#endregion

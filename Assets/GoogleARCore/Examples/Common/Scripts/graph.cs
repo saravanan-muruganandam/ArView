@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
+using VolumetricLines;
 public class graph : MonoBehaviour {
 
 
@@ -21,11 +22,16 @@ public class graph : MonoBehaviour {
 	private Transform yAxisGameObject=null;
 	private Transform graphLineObject=null;
 	//Line rendereer for X Y and graph lines
-	private LineRenderer xLine=null;
-	private LineRenderer yLine=null;
+	//private LineRenderer xLine=null;
+	//private LineRenderer yLine=null;
+
+	private VolumetricLines.VolumetricLineBehavior xlineBehaver;
+	private VolumetricLines.VolumetricLineBehavior ylineBehaver;
+	private VolumetricLines.VolumetricMultiLineBehavior graphMultiLineBehavr;
 	private LineRenderer graphLine=null;
 	// Graph plot value
 	private List<GraphPoint> graphPoints;
+	private List<Vector3> graphLinePoints;
 	public Object xDividerPrefab;
 	public Object yDividerPrefab;
 	// Four vertor point of a face in square
@@ -68,23 +74,30 @@ public class graph : MonoBehaviour {
 		xDividerGameobjects = new ArrayList();
 		collider = gameObject.GetComponent<BoxCollider>();
 
-		graphPoints = new List<GraphPoint>(); 
+		graphPoints = new List<GraphPoint>();
+		graphLinePoints = new List<Vector3>();
 		//XScaleline and YscaleLIne
 		xAxisGameObject = transform.Find("xAxis");
 		yAxisGameObject = transform.Find("yAxis");
 		graphLineObject = transform.Find("GraphLine");
+		
+		//xLine = xAxisGameObject.GetComponent<LineRenderer>();
+		//yLine = yAxisGameObject.GetComponent<LineRenderer>();
 
-		xLine = xAxisGameObject.GetComponent<LineRenderer>();
-		yLine = yAxisGameObject.GetComponent<LineRenderer>();
+		xlineBehaver = xAxisGameObject.GetComponent<VolumetricLineBehavior>();
+		ylineBehaver = yAxisGameObject.GetComponent<VolumetricLineBehavior>();
+
 		graphLine = graphLineObject.GetComponent<LineRenderer>();
-		xLine.gameObject.SetActive(true);
-		yLine.gameObject.SetActive(true);
-		graphLine.gameObject.SetActive(true);
+		graphMultiLineBehavr = graphLineObject.GetComponent<VolumetricMultiLineBehavior>();
+
+		xAxisGameObject.gameObject.SetActive(true);
+		yAxisGameObject.gameObject.SetActive(true);
+		graphLineObject.gameObject.SetActive(true);
 		graphLine.positionCount = graphPoints.Count;
 		graphLine.loop = false;
 
-		graphLine.startWidth = graphLine.endWidth = yLine.startWidth = xLine.startWidth = yLine.endWidth = xLine.endWidth = 0.03f;
-		//graphLine.material = xLine.material = yLine.material = new Material(Shader.Find("Particles/Additive"));
+		graphLine.startWidth = graphLine.endWidth = 0.03f;
+		graphLine.material = new Material(Shader.Find("Particles/Additive"));
 
 		for (int i = 0; i < noOfYpartition + 1; i++)
 		{
@@ -117,11 +130,17 @@ public class graph : MonoBehaviour {
 
 		//Debug.DrawLine(vertice3, vertice4, Color.blue);
 		//line for x axis
-		xLine.SetPosition(0, vertice1);
-		xLine.SetPosition(1, vertice2);
+		//xLine.SetPosition(0, vertice1);
+		//xLine.SetPosition(1, vertice2);
+		//xAxisGameObject.TransformPoint(xAxisGameObject.transform.position);
+		xlineBehaver.StartPos = transform.InverseTransformPoint(vertice1);
+		xlineBehaver.EndPos = transform.InverseTransformPoint(vertice2);
 		//line y scale end points
-		yLine.SetPosition(0, vertice1);
-		yLine.SetPosition(1, vertice3);
+		//yLine.SetPosition(0, vertice1);
+		//yLine.SetPosition(1, vertice3);
+
+		ylineBehaver.StartPos = transform.InverseTransformPoint(vertice1);
+		ylineBehaver.EndPos = transform.InverseTransformPoint(vertice3);
 
 		foreach (GameObject divY in yDividerGameobjects)
 		{
@@ -136,9 +155,14 @@ public class graph : MonoBehaviour {
 		}
 	}
 
+	void FixedUpdate()
+	{
+		
+
+	}
 	IEnumerator alignGraphValue() {
 		while (true) {
-			graphLine.positionCount = graphPoints.Count;
+			//
 			XscaleLastTime = getCurrentTime().AddSeconds(-timeLinelengthInSec);
 			
 			foreach (GameObject divX in xDividerGameobjects)
@@ -146,7 +170,8 @@ public class graph : MonoBehaviour {
 				divX.transform.Find("valueText").GetComponent<TextMesh>().text = (getCurrentTime().AddSeconds(-(double)(((xDividerGameobjects.IndexOf(divX) / noOfXpartition)) * (timeLinelengthInSec)))).ToString("HH:mm:ss");
 				
 			}
-
+			graphLine.positionCount = graphPoints.Count;
+			graphLinePoints.Clear();
 			foreach (GraphPoint graphPoint in graphPoints)
 			{
 				float YLearpPercent = 1 - getXYslot(graphPoint.graphValue, maxYscaleValue, minYscaleValue);
@@ -157,16 +182,24 @@ public class graph : MonoBehaviour {
 
 				Vector3 actualPoint = Vector3.Lerp(xScalevalue, xScaleTopValue, YLearpPercent);
 				graphPoint.worldPositionPoint = actualPoint;
-				graphPoint.mark.transform.position = actualPoint;
-				graphPoint.mark.name = graphPoints.IndexOf(graphPoint).ToString();
-				graphPoint.mark.SetActive(true);
-				graphLine.SetPosition(graphPoints.IndexOf(graphPoint), graphPoint.worldPositionPoint);
+				//graphPoint.mark.transform.position = actualPoint;
+				//graphPoint.mark.name = graphPoints.IndexOf(graphPoint).ToString();
+				//graphPoint.mark.SetActive(true);
+				//graphLine.SetPosition(graphPoints.IndexOf(graphPoint), graphPoint.worldPositionPoint);
+				graphLinePoints.Insert(graphPoints.IndexOf(graphPoint), graphPoint.worldPositionPoint);
+				graphLinePoints[graphPoints.IndexOf(graphPoint)] = graphPoint.worldPositionPoint;
 				if ((getTimeDiffinPercentage(graphPoint.valueRecordedTime)) >= 1f)
 				{
-					Destroy(graphPoint.mark);
-					graphPoints.Remove (graphPoint);
+					//Destroy(graphPoint.mark);
+					graphPoints.Remove(graphPoint);
 					break;
 				}
+			}
+			//Debug.Log("graphLinePoints.count: " + graphLinePoints.Count);
+			if (graphLinePoints.Count > 2)
+			{
+				graphMultiLineBehavr.UpdateLineVertices(graphLinePoints.ToArray());
+
 			}
 
 			yield return null;
@@ -184,12 +217,12 @@ public class graph : MonoBehaviour {
 			GraphPoint graphpoint = new GraphPoint();
 			float YValue = Random.Range(minYscaleValue, maxYscaleValue);
 			graphpoint.graphValue = YValue;
-			graphpoint.mark = Instantiate(xDividerPrefab, gameObject.transform.parent) as GameObject;
-			graphpoint.mark.SetActive(false);
-			graphpoint.mark.transform.localScale = new Vector3(0.1110651f, 0.1110651f, 0.1110651f);
+			//graphpoint.mark = Instantiate(xDividerPrefab, gameObject.transform.parent) as GameObject;
+			//graphpoint.mark.SetActive(false);
+			//graphpoint.mark.transform.localScale = new Vector3(0.1110651f, 0.1110651f, 0.1110651f);
 			graphpoint.valueRecordedTime = getCurrentTime();
 			//graphpoint.mark.transform.Find("valueText").GetComponent<TextMesh>().text = XY.x.ToString()+" , "+ XY.y.ToString();
-			graphpoint.mark.transform.Find("valueText").GetComponent<TextMesh>().text = currentTime.ToString("HH:mm:ss.ffff") + " , " + YValue.ToString();
+			//graphpoint.mark.transform.Find("valueText").GetComponent<TextMesh>().text = currentTime.ToString("HH:mm:ss.ffff") + " , " + YValue.ToString();
 			//graphpoint.mark.transform.parent = collider.transform;
 			graphPoints.Add(graphpoint);
 			graphPoints.Sort(new sortGraphPointByTime());
