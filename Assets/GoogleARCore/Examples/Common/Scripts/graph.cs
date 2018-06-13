@@ -27,7 +27,7 @@ public class graph : MonoBehaviour {
 
 	private VolumetricLines.VolumetricLineBehavior xlineBehaver;
 	private VolumetricLines.VolumetricLineBehavior ylineBehaver;
-	private VolumetricLines.VolumetricMultiLineBehavior graphMultiLineBehavr;
+	private VolumetricLines.VolumetricLineStripBehavior graphMultiLineBehavr;
 	private LineRenderer graphLine=null;
 	// Graph plot value
 	private List<GraphPoint> graphPoints;
@@ -88,7 +88,7 @@ public class graph : MonoBehaviour {
 		ylineBehaver = yAxisGameObject.GetComponent<VolumetricLineBehavior>();
 
 		graphLine = graphLineObject.GetComponent<LineRenderer>();
-		graphMultiLineBehavr = graphLineObject.GetComponent<VolumetricMultiLineBehavior>();
+		graphMultiLineBehavr = graphLineObject.GetComponent<VolumetricLineStripBehavior>();
 
 		xAxisGameObject.gameObject.SetActive(true);
 		yAxisGameObject.gameObject.SetActive(true);

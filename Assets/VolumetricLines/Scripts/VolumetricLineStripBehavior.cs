@@ -377,7 +377,7 @@ namespace VolumetricLines
 			}
 			for (int i=0; i < m_lineVertices.Length - 1; ++i)
 			{
-				Gizmos.DrawLine(gameObject.transform.TransformPoint(m_lineVertices[i]), gameObject.transform.TransformPoint(m_lineVertices[i+1]));
+				//Gizmos.DrawLine(gameObject.transform.TransformPoint(m_lineVertices[i]), gameObject.transform.TransformPoint(m_lineVertices[i+1]));
 			}
 		}
 		#endregion
