@@ -187,7 +187,7 @@ public class graph : MonoBehaviour {
 				//graphPoint.mark.SetActive(true);
 				//graphLine.SetPosition(graphPoints.IndexOf(graphPoint), graphPoint.worldPositionPoint);
 				graphLinePoints.Insert(graphPoints.IndexOf(graphPoint), graphPoint.worldPositionPoint);
-				graphLinePoints[graphPoints.IndexOf(graphPoint)] = graphPoint.worldPositionPoint;
+				graphLinePoints[graphPoints.IndexOf(graphPoint)] = transform.InverseTransformPoint(graphPoint.worldPositionPoint);
 				if ((getTimeDiffinPercentage(graphPoint.valueRecordedTime)) >= 1f)
 				{
 					//Destroy(graphPoint.mark);
