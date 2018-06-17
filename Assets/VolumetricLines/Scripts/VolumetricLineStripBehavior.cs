@@ -225,7 +225,7 @@ namespace VolumetricLines
 
 			if (m_newSetOfVertices.Length < 3)
 			{
-				Debug.LogError("Add at least 3 vertices to the VolumetricLineStrip");
+				//Debug.LogError("Add at least 3 vertices to the VolumetricLineStrip");
 				return;
 			}
 
