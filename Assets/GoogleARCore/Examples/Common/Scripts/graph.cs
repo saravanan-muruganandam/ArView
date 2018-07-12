@@ -80,6 +80,7 @@ public class graph : MonoBehaviour {
 		xAxisGameObject = transform.Find("xAxis");
 		yAxisGameObject = transform.Find("yAxis");
 		graphLineObject = transform.Find("GraphLine");
+		graphLineObject.gameObject.SetActive (true);
 		
 		//xLine = xAxisGameObject.GetComponent<LineRenderer>();
 		//yLine = yAxisGameObject.GetComponent<LineRenderer>();
@@ -93,11 +94,10 @@ public class graph : MonoBehaviour {
 		xAxisGameObject.gameObject.SetActive(true);
 		yAxisGameObject.gameObject.SetActive(true);
 		graphLineObject.gameObject.SetActive(true);
-		graphLine.positionCount = graphPoints.Count;
 		graphLine.loop = false;
 
 		graphLine.startWidth = graphLine.endWidth = 0.03f;
-		graphLine.material = new Material(Shader.Find("Particles/Additive"));
+		//graphLine.material = new Material(Shader.Find("Particles/Additive"));
 
 		for (int i = 0; i < noOfYpartition + 1; i++)
 		{
@@ -114,7 +114,7 @@ public class graph : MonoBehaviour {
 
 		}
 		
-		StartCoroutine ("alignGraphValue");
+
 		StartCoroutine("addCurrentValue");
 	}
 
@@ -153,59 +153,55 @@ public class graph : MonoBehaviour {
 			divX.transform.position = Vector3.Lerp (vertice1, vertice2,(float) xDividerGameobjects.IndexOf(divX)/noOfXpartition);
 
 		}
+		//graphLine.positionCount = graphPoints.Count;
+
 	}
 
 	void FixedUpdate()
 	{
 		
+		XscaleLastTime = getCurrentTime().AddSeconds(-timeLinelengthInSec);
 
-	}
-	IEnumerator alignGraphValue() {
-		while (true) {
-			//
-			XscaleLastTime = getCurrentTime().AddSeconds(-timeLinelengthInSec);
-			
-			foreach (GameObject divX in xDividerGameobjects)
-			{
-				divX.transform.Find("valueText").GetComponent<TextMesh>().text = (getCurrentTime().AddSeconds(-(double)(((xDividerGameobjects.IndexOf(divX) / noOfXpartition)) * (timeLinelengthInSec)))).ToString("HH:mm:ss");
-				
-			}
-			graphLine.positionCount = graphPoints.Count;
-			graphLinePoints.Clear();
-			foreach (GraphPoint graphPoint in graphPoints)
-			{
-				float YLearpPercent = 1 - getXYslot(graphPoint.graphValue, maxYscaleValue, minYscaleValue);
+		foreach (GameObject divX in xDividerGameobjects)
+		{
+			divX.transform.Find("valueText").GetComponent<TextMesh>().text = (getCurrentTime().AddSeconds(-(double)(((xDividerGameobjects.IndexOf(divX) / noOfXpartition)) * (timeLinelengthInSec)))).ToString("HH:mm:ss");
 
-				Vector3 xScalevalue = Vector3.Lerp(vertice1, vertice2, getTimeDiffinPercentage(graphPoint.valueRecordedTime)); //modify this to adjust the graphpoint horizontal alignment and movement
-
-				Vector3 xScaleTopValue = Vector3.Lerp(vertice3, vertice4, getTimeDiffinPercentage(graphPoint.valueRecordedTime));
-
-				Vector3 actualPoint = Vector3.Lerp(xScalevalue, xScaleTopValue, YLearpPercent);
-				graphPoint.worldPositionPoint = actualPoint;
-				//graphPoint.mark.transform.position = actualPoint;
-				//graphPoint.mark.name = graphPoints.IndexOf(graphPoint).ToString();
-				//graphPoint.mark.SetActive(true);
-				//graphLine.SetPosition(graphPoints.IndexOf(graphPoint), graphPoint.worldPositionPoint);
-				graphLinePoints.Insert(graphPoints.IndexOf(graphPoint), graphPoint.worldPositionPoint);
-				graphLinePoints[graphPoints.IndexOf(graphPoint)] = transform.InverseTransformPoint(graphPoint.worldPositionPoint);
-				if ((getTimeDiffinPercentage(graphPoint.valueRecordedTime)) >= 1f)
-				{
-					//Destroy(graphPoint.mark);
-					graphPoints.Remove(graphPoint);
-					break;
-				}
-			}
-			//Debug.Log("graphLinePoints.count: " + graphLinePoints.Count);
-			if (graphLinePoints.Count > 2)
-			{
-				graphMultiLineBehavr.UpdateLineVertices(graphLinePoints.ToArray());
-
-			}
-
-			yield return null;
 		}
+		graphLinePoints.Clear();
+		graphPoints.RemoveAll (s => getTimeDiffinPercentage (s.valueRecordedTime)>=1f);
 
+		foreach (GraphPoint graphPoint in graphPoints)
+		{
+			if ((getTimeDiffinPercentage(graphPoint.valueRecordedTime)) >= 1f)
+			{
+				//Destroy(graphPoint.mark);
+				graphPoints.Remove(graphPoint);
+				continue;
+			}
+			float YLearpPercent = 1 - getXYslot(graphPoint.graphValue, maxYscaleValue, minYscaleValue);
+
+			Vector3 xScalevalue = Vector3.Lerp(vertice1, vertice2, getTimeDiffinPercentage(graphPoint.valueRecordedTime)); //modify this to adjust the graphpoint horizontal alignment and movement
+
+			Vector3 xScaleTopValue = Vector3.Lerp(vertice3, vertice4, getTimeDiffinPercentage(graphPoint.valueRecordedTime));
+
+			Vector3 actualPoint = Vector3.Lerp(xScalevalue, xScaleTopValue, YLearpPercent);
+			graphPoint.worldPositionPoint = actualPoint;
+			//graphPoint.mark.transform.position = actualPoint;
+			//graphPoint.mark.name = graphPoints.IndexOf(graphPoint).ToString();
+			//graphPoint.mark.SetActive(true);
+			//graphLine.SetPosition(graphPoints.IndexOf(graphPoint), graphPoint.worldPositionPoint);
+
+			graphLinePoints.Insert(graphPoints.IndexOf(graphPoint), transform.InverseTransformPoint(graphPoint.worldPositionPoint));
+
+			//graphLinePoints[graphPoints.IndexOf(graphPoint)] = transform.InverseTransformPoint(graphPoint.worldPositionPoint);
+
+		}
+		//Debug.Log("graphLinePoints.count: " + graphLinePoints.Count);
+
+		graphLine.positionCount = graphLinePoints.Count;
+		graphLine.SetPositions (graphLinePoints.ToArray());
 	}
+
 
 	IEnumerator addCurrentValue()
 	{
@@ -240,10 +236,7 @@ public class graph : MonoBehaviour {
 			System.DateTime c2 = b.valueRecordedTime;
 			if (c1 > c2)
 				return 1;
-			if (c1 < c2)
-				return -1;
-			else
-				return 0;
+			return c1 < c2 ? -1 : 0;
 		}
 	}
 
